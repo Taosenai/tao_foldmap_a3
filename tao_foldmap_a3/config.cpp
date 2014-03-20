@@ -214,7 +214,7 @@ class RscTitles {
 			colorNames[] = {0.85, 0.62, 0.61, 0.9};
 			colorInactive[] = {0.8, 0.7, 0.7, 0.5};
 			colorOutside[] = {0, 0, 0, 1};
-			colorBackground[] = {0.016, 0.004, 0, 0.95};
+			colorBackground[] = {0.036, 0.024, 0.02, 0.95};
 			colorText[] = {0.84, 0.61, 0.60, 0.85};
 
 			colorGrid[] = {0.371, 0.124, 0.122, 0.5};

@@ -5,6 +5,10 @@ tao_foldmap = false;
 
 /////////////////////////////////////////////////////////////////////////////////
 
+
+// Include the userconfig key file
+#include "\userconfig\tao_foldmap_a3\tao_foldmap_a3.hpp"
+
 // Get a rsc layer
 tao_foldmap_rscLayer = ["TMR_FoldMap"] call BIS_fnc_rscLayer;
 
@@ -63,7 +67,8 @@ tao_foldmap_mapBackPosYOffset = tao_foldmap_mapPosYOffset - 0.050 + 0.025 - 0.01
 #define tao_foldmap_statusBarYOffset 0.021
 #define tao_foldmap_statusBarTextYOffset 0.022
 
-// Draw event handler for foldmap.
+// FUNCTIONS /////////////////////////////////////////////////////////////////////
+
 tao_foldmap_drawUpdate = {
 	// Draw location of player if in Vet/Expert and has a GPS
 	if (!cadetMode && ("ItemGPS" in assignedItems player)) then {
@@ -140,11 +145,10 @@ tao_foldmap_initDialog = {
 	// Hide the map we are not using.
 	((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlInactive) ctrlSetPosition [tao_foldmap_mapPosX, safezoneY + 1 * safezoneW];
 	((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlInactive) ctrlCommit 0;
-	
 };
 
 // Loop which runs while foldmap is open. Separate from draw EH.
-tao_foldMap_drawMapLoop = {
+tao_foldmap_drawMapLoop = {
 	// Scroll the map up from the bottom of the screen.
 	tao_foldmap_rscLayer cutRsc ["tao_foldmap","PLAIN",0];
 
@@ -314,8 +318,83 @@ tao_foldMap_drawMapLoop = {
 	};
 };
 
+// Process keybinds specified in config file, if so specified. Else, default to modified actionKeys
+tao_foldmap_processKeyConfig = {
+	// Key config format is [dikCode, shift?, ctrl?, alt?]
+	if (TAO_FOLDMAP_USEBUILTINKEYS) then {
+		// User has asked us to use config keys, parse them into a keyHandler check expression
+		tao_foldmap_keyOpen = [TAO_FOLDMAP_OPEN, TAO_FOLDMAP_OPEN_SHIFT, TAO_FOLDMAP_OPEN_CTRL, TAO_FOLDMAP_OPEN_ALT];
+		tao_foldmap_keyCenter = [TAO_FOLDMAP_CENTER, TAO_FOLDMAP_CENTER_SHIFT, TAO_FOLDMAP_CENTER_CTRL, TAO_FOLDMAP_CENTER_ALT];
+		tao_foldmap_keyZoomIn = [TAO_FOLDMAP_ZOOMIN, TAO_FOLDMAP_ZOOMIN_SHIFT, TAO_FOLDZOOMIN_CTRL, TAO_FOLDMAP_ZOOMIN_ALT];
+		tao_foldmap_keyZoomOut = [TAO_FOLDMAP_ZOOMOUT, TAO_FOLDMAP_ZOOMOUT_SHIFT, TAO_FOLDZOOMOUT_CTRL, TAO_FOLDMAP_ZOOMOUT_ALT];
+		tao_foldmap_keyNVMode = [TAO_FOLDMAP_NVMODE, TAO_FOLDMAP_NVMODE_SHIFT, TAO_FOLDNVMODE_CTRL, TAO_FOLDMAP_NVMODE_ALT];
+	} else {
+		// Default: Use modified actionKeys for all keybinds
+		tao_foldmap_keyOpen = [actionKeys "ShowMap" select 0, true, false, false];
+		tao_foldmap_keyCenter = [actionKeys "ShowMap" select 0, true, true, false];
+		tao_foldmap_keyZoomIn = [actionKeys "ZoomIn" select 0, true, true, false];
+		tao_foldmap_keyZoomOut = [actionKeys "ZoomOut" select 0, true, true, false];
+		tao_foldmap_keyNVMode = [actionKeys "NightVision" select 0, true, true, false];
+	};
+};
+
+tao_xnor = {
+	// SQF is shit and the fact that I have implement this like so should be embarassing
+	// to every single engineer responsible for it. Including the current A3 devs who 
+	// close tickets related to the absence of a baseline logical equivalence operator
+	// as "working as intended." I flatly refuse to use 0 and 1 #define'd to boolean
+	// values in this day and age.
+
+	// If we're going to continue to have to use this awful scripting language, they could
+	// at least fix the problems with it and make it decent to use.
+
+	// So much for "Java."
+
+	_a = _this select 0;
+	_b = _this select 1;
+
+	_ret = true;
+	if (_a) then {
+		if (_b) then {
+			_ret = true;
+		} else {
+			_ret = false;
+		};
+	} else {
+		if (!_b) then {
+			_ret = true;
+		} else {
+			_ret = false;
+		};
+	};
+
+	_ret;
+};
+
+// Checks if a given key input [dikcode, shift, ctrl, alt] is equal to a key config array (same format)
+tao_foldmap_checkKey = {
+	_keyConfig = _this select 0;
+	_dikCode = _this select 1;
+	_shift = _this select 2;
+	_ctrl = _this select 3;
+	_alt = _this select 4;
+
+	_kcDikCode = _keyConfig select 0;
+	_kcShift = _keyConfig select 1;
+	_kcCtrl = _keyConfig select 2;
+	_kcAlt = _keyConfig select 3;
+
+	// Return true if all are equal, false if not.
+
+	//_dikCode == _kcDikCode && _shift == _kcShift && _ctrl == _kcCtrl && _alt == _kcAlt;
+	// That's what we could do if SQF WERE REMOTELY A FUCKING USEFUL SCRIPTING LANGUAGE.
+
+	_dikCode == _kcDikCode && ([_shift, _kcShift] call tao_xnor) && ([_ctrl, _kcCtrl] call tao_xnor) && ([_alt, _kcAlt] call tao_xnor);
+
+};
+
 // Key handler for opening, closing, and moving tap.
-tao_foldMap_keyHandler = {
+tao_foldmap_keyHandler = {
 	private["_handled", "_display", "_ctrl", "_dikCode", "_shift", "_alt"];
 	_display = _this select 0;
 	_dikCode = _this select 1;
@@ -326,7 +405,7 @@ tao_foldMap_keyHandler = {
 	_handled = false;
 	
 	// Toggle foldmap on Shift-Map
-	if (_shift && !_ctrl && _dikCode in (actionKeys "ShowMap") && !visibleMap && ("ItemMap" in assignedItems player)) then {
+	if ([tao_foldmap_keyOpen, _dikCode, _shift, _ctrl, _alt] call tao_foldmap_checkKey && !visibleMap && ("ItemMap" in assignedItems player)) then {
 		// Initialize variable if never set.
 		if (isNil "tao_foldmap_open") then {tao_foldmap_open = false};
 	
@@ -351,7 +430,7 @@ tao_foldMap_keyHandler = {
 	
 	// Shift-Ctrl-Map 'refolds' the map to recenter it. Poor man's GPS I guess but whatever, I don't really care
 	// about people who are playing ArmA for landnav training.
-	if (_shift && _ctrl && _dikCode in (actionKeys "ShowMap") && tao_foldmap_open) then {
+	if ([tao_foldmap_keyCenter, _dikCode, _shift, _ctrl, _alt] call tao_foldmap_checkKey && tao_foldmap_open) then {
 		tao_foldmap_centerpos = getpos player;
 		((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlActive) ctrlMapAnimAdd [0, tao_foldmap_mapScale, [tao_foldmap_centerpos select 0, tao_foldmap_centerpos select 1, 0]];
 		ctrlMapAnimCommit ((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlActive);
@@ -359,7 +438,7 @@ tao_foldMap_keyHandler = {
 	};
 
 	// Shift-Ctrl-ZoomIn to center and zoom
-	if (_shift && _ctrl && _dikCode in (actionKeys "ZoomIn") && tao_foldmap_open) then {
+	if ([tao_foldmap_keyZoomIn, _dikCode, _shift, _ctrl, _alt] call tao_foldmap_checkKey && tao_foldmap_open) then {
 		if (tao_foldmap_mapscale / 2 > 0.005) then { // Don't allow excessive zoom
 			tao_foldmap_centerpos = getpos player;
 			tao_foldmap_mapScale = tao_foldmap_mapScale /2;
@@ -371,7 +450,7 @@ tao_foldMap_keyHandler = {
 	};
 	
 	// Shift-Ctrl-ZoomOut to center and unzoom
-	if (_shift && _ctrl && _dikCode in (actionKeys "ZoomOut") && tao_foldmap_open) then {
+	if ([tao_foldmap_keyZoomOut, _dikCode, _shift, _ctrl, _alt] call tao_foldmap_checkKey && tao_foldmap_open) then {
 		tao_foldmap_centerpos = getpos player;
 		tao_foldmap_mapScale = tao_foldmap_mapScale * 2;
 		if (tao_foldmap_mapScale > 1) then { 
@@ -384,7 +463,7 @@ tao_foldMap_keyHandler = {
 	};
 
 	// Shift-Ctrl-Nightvision to toggle the map's nightvision view
-	if (_shift && _ctrl && _dikCode in (actionKeys "NightVision") && tao_foldmap_open) then {
+	if ([tao_foldmap_keyNVMode, _dikCode, _shift, _ctrl, _alt] call tao_foldmap_checkKey && tao_foldmap_open) then {
 		tao_foldmap_nightMap = !tao_foldmap_nightMap;
 		// Change which map is in use
 		if (tao_foldmap_nightMap) then { // Night map
@@ -423,7 +502,8 @@ tao_foldmap_firedEH = {
 // Add key handler. 
 [] spawn {
 	waituntil {!isNull (findDisplay 46)};
-	(findDisplay 46) displayAddEventHandler ["KeyDown", "_this call tao_foldMap_keyHandler"];
+	[] call tao_foldmap_processKeyConfig;
+	(findDisplay 46) displayAddEventHandler ["KeyDown", "_this call tao_foldmap_keyHandler"];
 };
 
 /////////////////////////////////////////////////////////////////////////////////
