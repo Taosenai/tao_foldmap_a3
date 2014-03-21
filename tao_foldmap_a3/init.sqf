@@ -321,7 +321,7 @@ tao_foldmap_drawMapLoop = {
 // Process keybinds specified in config file, if so specified. Else, default to modified actionKeys
 tao_foldmap_processKeyConfig = {
 	// Key config format is [dikCode, shift?, ctrl?, alt?]
-	if (TAO_FOLDMAP_USEBUILTINKEYS) then {
+	if (TAO_FOLDMAP_USECUSTOMKEYS) then {
 		// User has asked us to use config keys, parse them into a keyHandler check expression
 		tao_foldmap_keyOpen = [TAO_FOLDMAP_OPEN, TAO_FOLDMAP_OPEN_SHIFT, TAO_FOLDMAP_OPEN_CTRL, TAO_FOLDMAP_OPEN_ALT];
 		tao_foldmap_keyCenter = [TAO_FOLDMAP_CENTER, TAO_FOLDMAP_CENTER_SHIFT, TAO_FOLDMAP_CENTER_CTRL, TAO_FOLDMAP_CENTER_ALT];
@@ -339,16 +339,8 @@ tao_foldmap_processKeyConfig = {
 };
 
 tao_xnor = {
-	// SQF is shit and the fact that I have implement this like so should be embarassing
-	// to every single engineer responsible for it. Including the current A3 devs who 
-	// close tickets related to the absence of a baseline logical equivalence operator
-	// as "working as intended." I flatly refuse to use 0 and 1 #define'd to boolean
-	// values in this day and age.
-
-	// If we're going to continue to have to use this awful scripting language, they could
-	// at least fix the problems with it and make it decent to use.
-
-	// So much for "Java."
+	// The year is 2014. 
+	// SQF has no logical equivalence operator.
 
 	_a = _this select 0;
 	_b = _this select 1;

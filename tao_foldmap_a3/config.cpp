@@ -78,7 +78,7 @@ class RscTitles {
 			h = safezoneH * 0.015;
 			colorBackground[] = {0.09, 0.1, 0.13, 1};
 			colorText[] = {1,1,1,1};
-			sizeEx = "0.012 / (getResolution select 5)"
+			sizeEx = "0.012 / (getResolution select 5)";
 			text = "";
 		};
 
@@ -88,7 +88,7 @@ class RscTitles {
 			w = safezoneW * 0.305;
 			colorBackground[] = {1, 0, 0, 0};
 			colorText[] = {1,1,1,1};
-			sizeEx = "0.014 / (getResolution select 5)"
+			sizeEx = "0.014 / (getResolution select 5)";
 			text = "";
 		};
 
@@ -98,7 +98,7 @@ class RscTitles {
 			w = safezoneW * 0.295;
 			colorBackground[] = {1, 0, 0, 0};
 			colorText[] = {1,1,1,1};
-			sizeEx = "0.014 / (getResolution select 5)"
+			sizeEx = "0.014 / (getResolution select 5)";
 			text = "Armacomm AGPRS";
 		};
 		
