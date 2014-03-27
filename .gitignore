@@ -4,6 +4,7 @@
 *.zip
 *.bin
 *.bisign
+*.bikey
 
 
 # OS generated files #
@@ -28,7 +29,6 @@ Thumbs.db
 # Build results
 
 [Dd]ebug/
-Release/
 x64/
 build/
 [Bb]in/
