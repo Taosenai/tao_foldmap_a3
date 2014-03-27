@@ -55,7 +55,11 @@ tao_foldmap_nightMap = false; // Display the night vision map?
 #define tao_foldmap_rightX  0.66
 
 tao_foldmap_mapPosXOffset = tao_foldmap_leftX + 0.0032;
-tao_foldmap_mapPosYOffset = 0.265 - 0.026 + 0.015;
+if (TAO_FOLDMAP_PAPER) then {
+	tao_foldmap_mapPosYOffset = 0.265 - 0.026 + 0.015 + 0.049;
+} else {
+	tao_foldmap_mapPosYOffset = 0.265 - 0.026 + 0.015;
+};
 tao_foldmap_mapBackPosXOffset = tao_foldmap_mapPosXOffset - 0.07 - 0.0037;
 tao_foldmap_mapBackPosYOffset = tao_foldmap_mapPosYOffset - 0.050 + 0.025 - 0.015;
 
@@ -64,8 +68,8 @@ tao_foldmap_mapBackPosYOffset = tao_foldmap_mapPosYOffset - 0.050 + 0.025 - 0.01
 #define tao_foldmap_mapBackPosX  (safezoneX + tao_foldmap_mapBackPosXOffset * safezoneW)
 #define tao_foldmap_mapBackPosY  (safezoneY + tao_foldmap_mapBackPosYOffset * safezoneW)
 
-#define tao_foldmap_statusBarYOffset 0.021
-#define tao_foldmap_statusBarTextYOffset 0.022
+#define tao_foldmap_statusBarYOffset (safezoneH * 0.015)
+#define tao_foldmap_statusBarTextYOffset (safezoneH * 0.0155)
 
 // FUNCTIONS /////////////////////////////////////////////////////////////////////
 
@@ -76,8 +80,19 @@ tao_foldmap_drawUpdate = {
 		_dayColor = [0.06, 0.08, 0.06, 0.87];
 		_nightColor = [0.9, 0.9, 0.9, 0.8];
 
-		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 25) drawIcon [getText(configFile >> "CfgMarkers" >> "mil_arrow2" >> "icon"), _dayColor, _pos, 19, 25, direction vehicle player, "", false];
-		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 26) drawIcon [getText(configFile >> "CfgMarkers" >> "mil_arrow2" >> "icon"), _nightColor, _pos, 19, 25, direction vehicle player, "", false];
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 40) drawIcon [getText(configFile >> "CfgMarkers" >> "mil_arrow2" >> "icon"), _dayColor, _pos, 19, 25, direction vehicle player, "", false];
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 41) drawIcon [getText(configFile >> "CfgMarkers" >> "mil_arrow2" >> "icon"), _nightColor, _pos, 19, 25, direction vehicle player, "", false];
+	};
+
+	if (TAO_FOLDMAP_PAPER) then {
+		// Darkening code. Based on ShackTac Map Brightness by zx64 & Dslyecxi
+		if (!isNil "tao_foldmap_xPagingD") then {
+			_alpha = 0.6 min abs(sunOrMoon - 1);
+			_rectPos = ((uiNamespace getVariable "Tao_FoldMap") displayCtrl 40) ctrlMapScreenToWorld [tao_foldmap_mapPosX, tao_foldmap_mapPosY];
+			
+			// Draw a dark rectangle covering the map.
+			((uiNamespace getVariable "Tao_FoldMap") displayCtrl 40) drawRectangle [_rectPos, tao_foldmap_xPagingD * 2.5,tao_foldmap_yPagingD * 2.5, 0, [0, 0, 0, _alpha], "#(rgb,1,1,1)color(0,0,0,1)"];
+		};
 	};
 };
 
@@ -86,17 +101,34 @@ tao_foldmap_initDialog = {
 	// Scroll isn't finished yet.
 	tao_foldmap_scrollFinished = false;
 
-	// Determine if it's day or night so we can use the correct map.
-	tao_foldmap_mapCtrlActive = 25;
-	tao_foldmap_mapCtrlInactive = 26;
-	if (tao_foldmap_nightMap) then { // Night map
-		tao_foldmap_mapCtrlActive = 26;
-		tao_foldmap_mapCtrlInactive = 25;
+	// If requested, change to paper map.
+	tao_foldmap_isPaper = false;
+	if (TAO_FOLDMAP_PAPER) then {
+		tao_foldmap_isPaper = true;
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlSetText "\tao_foldmap_a3\data\paper_ca.paa";
+		// Hide the status bar.
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 30) ctrlSetFade 1;
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 31) ctrlSetFade 1;
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 32) ctrlSetFade 1;
+
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlCommit 0;
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 30) ctrlCommit 0;
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 31) ctrlCommit 0;
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 32) ctrlCommit 0;
+		// Will be committed later.
 	};
 
-	tao_foldmap_mapCtrlStatusBar = 24;
-	tao_foldmap_mapCtrlStatusBarRight = 27;
-	tao_foldmap_mapCtrlStatusBarLeft = 28;
+	// Determine if it's day or night so we can use the correct map.
+	tao_foldmap_mapCtrlActive = 40;
+	tao_foldmap_mapCtrlInactive = 41;
+	if (tao_foldmap_nightMap) then { // Night map
+		tao_foldmap_mapCtrlActive = 41;
+		tao_foldmap_mapCtrlInactive = 40;
+	};
+
+	tao_foldmap_mapCtrlStatusBar = 30;
+	tao_foldmap_mapCtrlStatusBarRight = 31;
+	tao_foldmap_mapCtrlStatusBarLeft = 32;
 	
 	// On first run, get the center pos. This is used for all paging thereafter.
 	if (isNil "tao_foldmap_centerPos") then {
@@ -139,8 +171,8 @@ tao_foldmap_initDialog = {
 	((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlStatusBarLeft) ctrlCommit 0;
 	
 	// Add draw handler to page the map and update the player marker.
-	((uiNamespace getVariable "Tao_FoldMap") displayCtrl 25) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_drawUpdate"];
-	((uiNamespace getVariable "Tao_FoldMap") displayCtrl 26) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_drawUpdate"];
+	((uiNamespace getVariable "Tao_FoldMap") displayCtrl 40) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_drawUpdate"];
+	((uiNamespace getVariable "Tao_FoldMap") displayCtrl 41) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_drawUpdate"];
 	
 	// Hide the map we are not using.
 	((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlInactive) ctrlSetPosition [tao_foldmap_mapPosX, safezoneY + 1 * safezoneW];
@@ -177,9 +209,16 @@ tao_foldmap_drawMapLoop = {
 	_date = format ["%1/%2/%3 %4:%5 []]]]", date select 0, date select 1, date select 2, date select 3, _min];
 	((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlStatusBarRight) ctrlSetText _date;
 	
-	// Darken the background sheet before it pops up.
-	//_darkFactor = (0.6 min (abs(sunOrMoon - 1)));
-	//((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlSetBackgroundColor [1 - _darkFactor, 1 - _darkFactor, 0.87 - _darkFactor / 1.08, 0.95];
+	// Darken the background sheet before it pops up if it's night.
+	_darkFactor = (0.6 min (abs(sunOrMoon - 1)));
+	if (_darkFactor != 0) then { // It's getting dark out.
+		// Magic numbers!
+		_color = 1 - _darkFactor - 0.2454;
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlSetTextColor [_color, _color, _color, 1];
+	} else {
+		// Daytime, usual colors
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlSetTextColor [1, 1, 1, 1];
+	};
 	
 	// Pop up map and background and GUI bits.
 	((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlSetPosition [tao_foldmap_mapBackPosX, tao_foldmap_mapBackPosY];
@@ -301,7 +340,7 @@ tao_foldmap_drawMapLoop = {
 	[] spawn {
 		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlSetPosition [tao_foldmap_mapBackPosX, safezoneY + 1 * safezoneW];
 		((uiNamespace getVariable "Tao_FoldMap") displayCtrl 23) ctrlCommit 0.4;
-		((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlActive) ctrlSetPosition [tao_foldmap_mapPosX, safezoneY + 1 * safezoneW];
+		((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlActive) ctrlSetPosition [tao_foldmap_mapPosX, safezoneY + 1.045 * safezoneW]; // Just a little extra Y to account for disparate distances traveled
 		((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlActive) ctrlCommit 0.4;
 		((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlStatusBar) ctrlSetPosition [tao_foldmap_mapPosX, safezoneY + 1 * safezoneW];
 		((uiNamespace getVariable "Tao_FoldMap") displayCtrl tao_foldmap_mapCtrlStatusBar) ctrlCommit 0.4;
@@ -454,16 +493,16 @@ tao_foldmap_keyHandler = {
 		_handled = true;
 	};
 
-	// Shift-Ctrl-Nightvision to toggle the map's nightvision view
-	if ([tao_foldmap_keyNVMode, _dikCode, _shift, _ctrl, _alt] call tao_foldmap_checkKey && tao_foldmap_open) then {
+	// Shift-Ctrl-Nightvision to toggle the map's nightvision view (if using tablet map)
+	if ([tao_foldmap_keyNVMode, _dikCode, _shift, _ctrl, _alt] call tao_foldmap_checkKey && tao_foldmap_open && !TAO_FOLDMAP_PAPER) then {
 		tao_foldmap_nightMap = !tao_foldmap_nightMap;
 		// Change which map is in use
 		if (tao_foldmap_nightMap) then { // Night map
-			tao_foldmap_mapCtrlActive = 26;
-			tao_foldmap_mapCtrlInactive = 25;
+			tao_foldmap_mapCtrlActive = 41;
+			tao_foldmap_mapCtrlInactive = 40;
 		} else {
-			tao_foldmap_mapCtrlActive = 25;
-			tao_foldmap_mapCtrlInactive = 26;
+			tao_foldmap_mapCtrlActive = 40;
+			tao_foldmap_mapCtrlInactive = 41;
 		};
 
 		// Show the map we want and give it the scale/centering properties of the current map.

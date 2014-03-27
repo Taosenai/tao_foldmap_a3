@@ -66,11 +66,12 @@ class RscTitles {
 			h = safezoneH * 0.745;
 			colorBackground[] = {0, 0, 0, 0};
 			colorText[] = {1,1,1,1};
+			shadow = 0;
 			text = "\tao_foldmap_a3\data\datapad_ca.paa";
 		};
 
 		class Tao_FoldMapStatusBar : TAO_RscStdText {
-			idc = 24;
+			idc = 30;
 			style = 0x01;
 			x = safezoneX + 0.582 * safezoneW;
 			y = safezoneY + 1 * safezoneW;
@@ -78,12 +79,12 @@ class RscTitles {
 			h = safezoneH * 0.015;
 			colorBackground[] = {0.09, 0.1, 0.13, 1};
 			colorText[] = {1,1,1,1};
-			sizeEx = "0.012 / (getResolution select 5)";
+			sizeEx = "0.014 / (getResolution select 5)";
 			text = "";
 		};
 
 		class Tao_FoldMapStatusBarTextRight : Tao_FoldMapStatusBar {
-			idc = 27;
+			idc = 31;
 			style = 0x01; // Right justify
 			w = safezoneW * 0.305;
 			colorBackground[] = {1, 0, 0, 0};
@@ -93,7 +94,7 @@ class RscTitles {
 		};
 
 		class Tao_FoldMapStatusBarTextLeft: Tao_FoldMapStatusBar {
-			idc = 28;
+			idc = 32;
 			style = 0x00; // Left justify
 			w = safezoneW * 0.295;
 			colorBackground[] = {1, 0, 0, 0};
@@ -103,7 +104,7 @@ class RscTitles {
 		};
 		
 		class Tao_FoldMap : RscMapControl {
-			idc = 25;
+			idc = 40;
 			x = safezoneX + 0.58 * safezoneW;
 			y = safezoneY + 1 * safezoneW;
 			w = safezoneW * 0.305;
@@ -186,7 +187,7 @@ class RscTitles {
 		};
 
 		class Tao_Foldmap_NightRed : Tao_Foldmap {
-			idc = 26;
+			idc = 41;
 			type = 101; // Use 100 to hide markers
 			style = 48;
 			colorLevels[] = {0.016, 0.004, 0, 1};
