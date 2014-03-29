@@ -1,6 +1,10 @@
 ﻿TODO
 - Better color scheme for maps. Kinda hard to read in A3 compared to in A2.
 
+2.5.1
+- Fix ctrl modifier for custom key binds.
+- Fix duplicate display in Expansions list.
+
 2.5
 - Paper map can now be chosen in the user config. Red nightvision mode will not be available. Default is still tablet.
 - Re-add zx64 & Dslyecxi-inspired darkening/dimming code for night.

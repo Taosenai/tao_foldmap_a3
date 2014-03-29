@@ -8,7 +8,7 @@
 
 // Use a paper map instead of the default tablet style interface?
 // This will also disable nightvision mode.
-#define TAO_FOLDMAP_PAPER true
+#define TAO_FOLDMAP_PAPER false
 
 // !!!!!!! IMPORTANT !!!!!!!
 // YOU MUST SET THIS TO TRUE TO USE THIS FILE FOR KEYBINDS!
