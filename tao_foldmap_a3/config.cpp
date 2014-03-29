@@ -13,18 +13,6 @@ class CfgPatches {
 	};
 };
 
-class CfgMods {
-	class tao_foldmap_a3 {
-		dir = "tao_foldmap_a3";
-		name = "Tao Folding Map";
-		picture = "";
-		hidePicture = "true";
-		hideName = "false";
-		actionName = "Website";
-		action = "http://ryanschultz.org/arma-3/";
-	};
-};
-
 class Extended_PostInit_EventHandlers {
 	class tao_foldmap_a3 {
 		clientInit = "call compile preProcessFileLineNumbers '\tao_foldmap_a3\init.sqf'";
