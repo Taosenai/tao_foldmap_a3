@@ -7,9 +7,9 @@ class CfgPatches {
 		weapons[] = {};
 		requiredVersion = 0.1;
 		requiredAddons[] = {CBA_XEH, CBA_MAIN, A3_UI_F};
-		version = 2.2;
+		version = 2.3;
 		author[] = {"Taosenai"};
-		authorUrl = "http://ryanschultz.org/arma-3/";
+		authorUrl = "http://ryanschultz.org/tmr/foldmap/";
 	};
 };
 
@@ -19,84 +19,82 @@ class Extended_PostInit_EventHandlers {
 	};
 };
 
-class TAO_RscStdText {
-   type = 0;
-   idc = -1;
-   style = 2;
-   colorBackground[] = {0,0,0,0};
-   colorText[] = {1,1,1,1};
-   font = "PuristaMedium";
-   size = 2.3;
-   sizeEx = 0.055;
-   shadow = 2;
-};
-
+class RscText;
+class RscPicture;
+class RscButton;
 class RscMapControl;
+
+// Define widths and heights for GUI.
+#define BACK_WIDTH (safezoneH * 0.55)
+#define BACK_HEIGHT (safezoneH * 0.745)
+#define MAP_WIDTH (safezoneH * 0.363)
+#define MAP_HEIGHT (safezoneH * 0.629)
+#define STATUS_HEIGHT (safezoneH * 0.015)
 
 class RscTitles {
 	class Tao_FoldMap {
 		idd = -1;
-		onLoad = "with uiNameSpace do { Tao_Foldmap = _this select 0 }; [] call tao_foldmap_initDialog;";
-		onUnload = "";
-		movingEnable = 1;
 		duration = 1000000;
 		fadeIn = 0;
 		fadeOut = 0;
+		
+		onLoad = "with uiNameSpace do {Tao_FoldMap = _this select 0}; [] call tao_foldmap_fnc_onLoadDialog;";
+		onUnload = "";
+
 		controls[] = {"Tao_FoldMapBack", "Tao_FoldMapStatusBar", "Tao_FoldMapStatusBarTextRight", "Tao_FoldMapStatusBarTextLeft", "TAO_Foldmap", "Tao_Foldmap_NightRed"};
 
-		class Tao_FoldMapBack : TAO_RscStdText {
+		class Tao_FoldMapBack : RscPicture {
 			idc = 23;
 			type = 0;
 			style = 48;
-			x = safezoneX + 0.574 * safezoneW;
-			y = safezoneY + 1 * safezoneW;
-			w = safezoneW * 0.4525;
-			h = safezoneH * 0.745;
+			x = safezoneX; // Positions are set in code.
+			y = safezoneY;
+			w = BACK_WIDTH;
+			h = BACK_HEIGHT;
 			colorBackground[] = {0, 0, 0, 0};
 			colorText[] = {1,1,1,1};
 			shadow = 0;
 			text = "\tao_foldmap_a3\data\datapad_ca.paa";
 		};
 
-		class Tao_FoldMapStatusBar : TAO_RscStdText {
+		class Tao_FoldMapStatusBar : RscText {
 			idc = 30;
 			style = 0x01;
-			x = safezoneX + 0.582 * safezoneW;
-			y = safezoneY + 1 * safezoneW;
-			w = safezoneW * 0.305;
-			h = safezoneH * 0.015;
+			x = safezoneX; // Positions are set in code.
+			y = safezoneY;
+			w = MAP_WIDTH;
+			h = STATUS_HEIGHT;
 			colorBackground[] = {0.09, 0.1, 0.13, 1};
 			colorText[] = {1,1,1,1};
-			sizeEx = "0.014 / (getResolution select 5)";
+			sizeEx = "0.015 / (getResolution select 5)";
+			font = "PuristaMedium";
+			size = 2.3;
+			shadow = 2;
 			text = "";
 		};
 
 		class Tao_FoldMapStatusBarTextRight : Tao_FoldMapStatusBar {
 			idc = 31;
 			style = 0x01; // Right justify
-			w = safezoneW * 0.305;
+			w = MAP_WIDTH;
 			colorBackground[] = {1, 0, 0, 0};
-			colorText[] = {1,1,1,1};
-			sizeEx = "0.014 / (getResolution select 5)";
 			text = "";
 		};
 
 		class Tao_FoldMapStatusBarTextLeft: Tao_FoldMapStatusBar {
 			idc = 32;
 			style = 0x00; // Left justify
-			w = safezoneW * 0.295;
+			w = MAP_WIDTH;
 			colorBackground[] = {1, 0, 0, 0};
-			colorText[] = {1,1,1,1};
-			sizeEx = "0.014 / (getResolution select 5)";
-			text = "Armacomm AGPRS";
+			text = "";
 		};
 		
 		class Tao_FoldMap : RscMapControl {
 			idc = 40;
-			x = safezoneX + 0.58 * safezoneW;
-			y = safezoneY + 1 * safezoneW;
-			w = safezoneW * 0.305;
-			h = safezoneH * 0.625;
+			x = safezoneX; // Positions are set in code.
+			y = safezoneY;
+			w = MAP_WIDTH;
+			h = MAP_HEIGHT;
 			type = 101; // Use 100 to hide markers
 			style = 48;
 			colorLevels[] = {0.65, 0.6, 0.55, 1};
@@ -250,5 +248,63 @@ class RscTitles {
 			onMouseButtonClick = "";
 			onMouseButtonDblClick = "";
 		};
+	};
+};
+
+class Tao_Foldmap_MovingDialog {
+	idd = -1;
+	movingEnable = true;
+	enableSimulation = true;
+
+	onLoad = "with uiNameSpace do {Tao_FoldMap_MovingDialog = _this select 0}; [] call tao_foldmap_fnc_onLoadMovingDialog;";
+	onUnload = "";
+
+	controlsBackground[] = {"MoveMeBack"};
+	controls[] = {"MoveMe", "ConfirmButton"};
+	
+	class MoveMeBack : RscText {
+		idc = 10;
+		moving = 1;
+
+		colorBackground[] = {0.1, 1, 0.1, 0.6};
+		colorText[] = {0, 0, 0, 1};
+
+		x = safezoneX; // Positions are set in init.
+		y = safezoneY;
+		w = MAP_WIDTH;
+		h = MAP_HEIGHT;
+	};
+
+	class MoveMe : RscText {
+		idc = 11;
+		style = 0x02;
+		moving = 0;
+
+		colorBackground[] = {0, 0, 0, 0};
+		colorText[] = {0, 0, 0, 1};
+		lineSpacing = 1.1;
+		shadow = 0;
+		text = "Move me. Press Esc to cancel.";
+
+		x = safezoneX; // Positions are set in init.
+		y = safezoneY;
+		w = MAP_WIDTH;
+		h = MAP_HEIGHT * 0.11;
+	};
+
+	class ConfirmButton : RscButton {
+		idc = 12;
+		moving = 0;
+
+		x = safezoneX; // Positions are set in init.
+		y = safezoneY;
+		w = MAP_WIDTH / 2;
+		h = MAP_HEIGHT * 0.05;
+
+		colorBackground[] = {0,0,0,0.5};
+
+		text = "Confirm";
+
+		onButtonClick = "0 = _this spawn tao_foldmap_fnc_confirmMove";
 	};
 };

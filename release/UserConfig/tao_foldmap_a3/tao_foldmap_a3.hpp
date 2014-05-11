@@ -1,5 +1,9 @@
 #include "\a3\editor_f\Data\Scripts\dikCodes.h"
 
+// !!!!!!! IMPORTANT !!!!!!!
+// If you have Tao Configuration System installed, the keybindings in this file WILL NOT BE USED.
+// !!!!!!! IMPORTANT !!!!!!!
+
 // You may change the keys and combinations used to access and manipulate the map here.
 // You can also customize the appearance of the map.
 
@@ -10,9 +14,13 @@
 // This will also disable nightvision mode.
 #define TAO_FOLDMAP_PAPER false
 
+// Should the map shake when running?
+#define TAO_FOLDMAP_ENABLESHAKE true
+
 // !!!!!!! IMPORTANT !!!!!!!
 // YOU MUST SET THIS TO TRUE TO USE THIS FILE FOR KEYBINDS!
 // Otherwise, Tao Folding Map will ignore this file and use its internal defaults!
+// If you have Tao Configuration System installed, the keybindings in this file WILL NEVER BE USED.
 // !!!!!!! IMPORTANT !!!!!!!
 #define TAO_FOLDMAP_USECUSTOMKEYS false
 
@@ -45,3 +53,10 @@
 #define TAO_FOLDMAP_NVMODE_SHIFT true
 #define TAO_FOLDMAP_NVMODE_CTRL true
 #define TAO_FOLDMAP_NVMODE_ALT false
+
+// Key combo to reposition the map
+#define TAO_FOLDMAP_REPOSITION DIK_M
+#define TAO_FOLDMAP_REPOSITION_SHIFT true
+#define TAO_FOLDMAP_REPOSITION_CTRL true
+#define TAO_FOLDMAP_REPOSITION_ALT true
+
