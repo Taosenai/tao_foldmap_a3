@@ -3,17 +3,12 @@
 
 tao_foldmap = false;
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 // Include BI DIK codes.
 #include "\a3\editor_f\Data\Scripts\dikCodes.h"
 // Include the userconfig key file.
 #include "\userconfig\tao_foldmap_a3\tao_foldmap_a3.hpp"
-
-#undef TAO_FOLDMAP_PAPER
-#define TAO_FOLDMAP_PAPER false
 
 // These parameters were added after the first config file was released
 // so users might not have them in their userconfig file.
@@ -83,7 +78,7 @@ tao_foldmap_isOpen = false;
 // Paper map needs to be slightly lower on screen.
 tao_foldmap_paperTabletYDelta = 0;
 if (TAO_FOLDMAP_PAPER) then {
-	tao_foldmap_paperTabletYDelta = 0.057;
+	tao_foldmap_paperTabletYDelta = 0.054;
 };
 
 // Hardcoded defaults.

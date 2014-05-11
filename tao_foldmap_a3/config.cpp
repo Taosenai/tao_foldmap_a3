@@ -289,7 +289,7 @@ class Tao_Foldmap_MovingDialog {
 		x = safezoneX; // Positions are set in init.
 		y = safezoneY;
 		w = MAP_WIDTH;
-		h = MAP_HEIGHT * 0.11;
+		h = MAP_HEIGHT * 0.12;
 	};
 
 	class ConfirmButton : RscButton {
