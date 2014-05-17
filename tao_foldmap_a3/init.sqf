@@ -72,6 +72,11 @@ tao_foldmap_isNightMap = false;
 // Is the map open?
 tao_foldmap_isOpen = false;
 
+// Is the map allowed to be repositioned? (Mission-exposed config.)
+if (isNil "tao_foldmap_repositionPermitted") then {
+	tao_foldmap_repositionPermitted = true;
+};
+
 
 // Main GUI positioning data.
 // -----
@@ -748,11 +753,17 @@ tao_foldmap_fnc_nvMode = {
 tao_foldmap_fnc_reposition = {
 	_handled = false;
 
-	if (tao_foldmap_isOpen) then {
-		MOVEME closeDisplay 0; // Close any other moving dialogs.
+	if (tao_foldmap_repositionPermitted) then {
+		if (tao_foldmap_isOpen) then {
+			MOVEME closeDisplay 0; // Close any other moving dialogs.
 
-		createDialog "Tao_FoldMap_MovingDialog";
-		_handled = true;
+			createDialog "Tao_FoldMap_MovingDialog";
+			_handled = true;
+		};
+	} else {
+		if (tao_foldmap_isOpen) then {
+			["Repositioning map disabled in mission config."] call cba_fnc_systemChat;
+		};
 	};
 
 	_handled;
