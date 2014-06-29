@@ -774,18 +774,18 @@ tao_foldmap_fnc_reposition = {
 // Read config file keys.
 [] call tao_foldmap_fnc_processKeyConfig;
 
-// Check if Tao Configuration System is available.
-if (!isNil "tao_configsys") then {
+// Check if CBA keybinding system is available.
+if (!isNil "cba_keybinding") then {
 	// Do not use config file key binds.
 	tao_foldmap_usingTCS = true;
 
 	// Register TCS keybinds (defaults are read from config file).
-	["Tao Folding Map", "Toggle folding map", "tao_foldmap_fnc_toggle", tao_foldmap_keyOpen, false] call tao_configsys_fnc_registerKeyHandler;
-	["Tao Folding Map", "Refold map", "tao_foldmap_fnc_refold", tao_foldmap_keyCenter, false] call tao_configsys_fnc_registerKeyHandler;
-	["Tao Folding Map", "Zoom in", "tao_foldmap_fnc_zoomIn", tao_foldmap_keyZoomIn, false] call tao_configsys_fnc_registerKeyHandler;
-	["Tao Folding Map", "Zoom out", "tao_foldmap_fnc_zoomOut", tao_foldmap_keyZoomOut, false] call tao_configsys_fnc_registerKeyHandler;
-	["Tao Folding Map", "Night mode (tablet only)", "tao_foldmap_fnc_nvMode", tao_foldmap_keyNVMode, false] call tao_configsys_fnc_registerKeyHandler;
-	["Tao Folding Map", "Reposition map", "tao_foldmap_fnc_reposition", tao_foldmap_keyReposition, false] call tao_configsys_fnc_registerKeyHandler;
+	["Tao Folding Map", "Toggle folding map", "tao_foldmap_fnc_toggle", tao_foldmap_keyOpen, false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Refold map", "tao_foldmap_fnc_refold", tao_foldmap_keyCenter, false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Zoom in", "tao_foldmap_fnc_zoomIn", tao_foldmap_keyZoomIn, false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Zoom out", "tao_foldmap_fnc_zoomOut", tao_foldmap_keyZoomOut, false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Night mode (tablet only)", "tao_foldmap_fnc_nvMode", tao_foldmap_keyNVMode, false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Reposition map", "tao_foldmap_fnc_reposition", tao_foldmap_keyReposition, false] call cba_fnc_registerKeybind;
 };
 
 // Add display key handler. This will only register binds if TCS is not available.
