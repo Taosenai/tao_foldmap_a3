@@ -148,11 +148,11 @@ tao_foldmap_fnc_drawUpdate = {
 
 	if (TAO_FOLDMAP_PAPER) then {
 		// Darken paper map based on time. Based on ShackTac Map Brightness by zx64 & Dslyecxi.
-		_alpha = 0.6 min abs(sunOrMoon - 1);
+		_alpha = (0.72 min (abs(sunOrMoon - 1)));
 		_rectPos = (FOLDMAP displayCtrl DAYMAP) ctrlMapScreenToWorld [MAP_XPOS, MAP_YPOS];
 		
 		// Draw a dark rectangle covering the map.
-		(FOLDMAP displayCtrl DAYMAP) drawRectangle [_rectPos, tao_foldmap_pageWidth * 2.5, tao_foldmap_pageHeight * 2.5, 0, [0, 0, 0, _alpha], "#(rgb,1,1,1)color(0,0,0,1)"];
+		(FOLDMAP displayCtrl DAYMAP) drawRectangle [_rectPos, tao_foldmap_pageWidth * 3, tao_foldmap_pageHeight * 3, 0, [0, 0, 0, _alpha], "#(rgb,1,1,1)color(0,0,0,1)"];
 	};
 };
 
@@ -205,9 +205,9 @@ tao_foldmap_fnc_onLoadDialog = {
 	[0] call tao_foldmap_fnc_moveMapOffscreen;
 	
 	// Add per-frame draw handler to update the player marker and darken map.
-	(FOLDMAP displayCtrl DAYMAP) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_drawUpdate"];
+	(FOLDMAP displayCtrl DAYMAP) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_fnc_drawUpdate"];
 	if (!TAO_FOLDMAP_PAPER) then {
-		(FOLDMAP displayCtrl NIGHTMAP) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_drawUpdate"];
+		(FOLDMAP displayCtrl NIGHTMAP) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_fnc_drawUpdate"];
 	};
 };
 
@@ -264,9 +264,9 @@ tao_foldmap_fnc_openFoldmap = {
 	tao_foldmap_rscLayer cutRsc ["Tao_FoldMap","PLAIN",0];
 	
 	// Match background color to map darkening code if night.
-	_darkFactor = (0.6 min (abs(sunOrMoon - 1)));
+	_darkFactor = (0.72 min (abs(sunOrMoon - 1)));
 	if (_darkFactor != 0) then {
-		_color = 1 - _darkFactor - 0.2454;
+		_color = 1 - _darkFactor;
 		(FOLDMAP displayCtrl BACKGROUND) ctrlSetTextColor [_color, _color, _color, 1];
 	} else {
 		(FOLDMAP displayCtrl BACKGROUND) ctrlSetTextColor [1, 1, 1, 1];
