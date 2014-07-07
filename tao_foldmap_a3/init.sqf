@@ -7,29 +7,6 @@ tao_foldmap = false;
 
 // Include BI DIK codes.
 #include "\a3\editor_f\Data\Scripts\dikCodes.h"
-// Include the userconfig key file.
-#include "\userconfig\tao_foldmap_a3\tao_foldmap_a3.hpp"
-
-// These parameters were added after the first config file was released
-// so users might not have them in their userconfig file.
-#ifndef TAO_FOLDMAP_ENABLESHAKE
-	#define TAO_FOLDMAP_ENABLESHAKE true
-#endif
-#ifndef TAO_FOLDMAP_REPOSITION
-	#define TAO_FOLDMAP_REPOSITION DIK_M
-#endif
-#ifndef TAO_FOLDMAP_REPOSITION_SHIFT
-	#define TAO_FOLDMAP_REPOSITION_SHIFT true
-#endif
-#ifndef TAO_FOLDMAP_REPOSITION_CTRL
-	#define TAO_FOLDMAP_REPOSITION_CTRL true
-#endif
-#ifndef TAO_FOLDMAP_REPOSITION_ALT
-	#define TAO_FOLDMAP_REPOSITION_ALT true
-#endif
-
-// Global to track if userconfig file is being used or Tao Configuration System.
-tao_foldmap_usingTCS = false;
 
 // Get a rsc layer from the BI system.
 tao_foldmap_rscLayer = ["TMR_FoldMap"] call BIS_fnc_rscLayer;
@@ -77,12 +54,25 @@ if (isNil "tao_foldmap_repositionPermitted") then {
 	tao_foldmap_repositionPermitted = true;
 };
 
+// Is the map allowed to be changed between paper and tablet? (Mission-exposed config.)
+if (isNil "tao_foldmap_changePermitted") then {
+	tao_foldmap_changePermitted = true;
+};
+
+// Get the preferred map style.
+_style = profileNamespace getVariable ["tao_foldmap_drawStyle", "tablet"];
+
+// Rendering type selection based on above setting.
+tao_foldmap_alternateDrawPaper = false;
+if (_style == "paper") then {
+	tao_foldmap_alternateDrawPaper = true;
+};
 
 // Main GUI positioning data.
 // -----
 // Paper map needs to be slightly lower on screen.
 tao_foldmap_paperTabletYDelta = 0;
-if (TAO_FOLDMAP_PAPER) then {
+if (tao_foldmap_alternateDrawPaper) then {
 	tao_foldmap_paperTabletYDelta = 0.054;
 };
 
@@ -92,22 +82,15 @@ if (TAO_FOLDMAP_PAPER) then {
 tao_foldmap_mapPosX = DEFAULT_MAP_XPOS;
 tao_foldmap_mapPosY = DEFAULT_MAP_YPOS;
 
-// Get positions from config if possible. Otherwise, defaults.
-if (!isNil "tao_configsys") then {
-	// Write defaults if necessary.
-	["Tao Folding Map", "MapPosX", DEFAULT_MAP_XPOS] call tao_configsys_fnc_writeDefaultKey;
-	["Tao Folding Map", "MapPosY", DEFAULT_MAP_YPOS] call tao_configsys_fnc_writeDefaultKey;
+// Get positions from config.
+_posX = profileNamespace getVariable ["tao_foldingmap_mapPosX", DEFAULT_MAP_XPOS];
+_posY = profileNamespace getVariable ["tao_foldingmap_mapPosY", DEFAULT_MAP_YPOS];
 
-	// Read values from config file.
-	_posX = ["Tao Folding Map", "MapPosX"] call tao_configsys_fnc_readKey;
-	_posY = ["Tao Folding Map", "MapPosY"] call tao_configsys_fnc_readKey;
+// Make sure it's on the screen.
+if (typeName _posX == "SCALAR" && typeName _posY == "SCALAR" && _posX > safeZoneXAbs && _posY > safeZoneY && _posX < safeZoneWAbs && _posY < safeZoneH) then {
 
-	// Make sure it's on the screen.
-	if (typeName _posX == "SCALAR" && typeName _posY == "SCALAR" && _posX > safeZoneXAbs && _posY > safeZoneY && _posX < safeZoneWAbs && _posY < safeZoneH) then {
-
-		tao_foldmap_mapPosX = _posX;
-		tao_foldmap_mapPosY = _posY;
-	};
+	tao_foldmap_mapPosX = _posX;
+	tao_foldmap_mapPosY = _posY;
 };
 // -----
 
@@ -139,14 +122,14 @@ if (!isNil "tao_configsys") then {
 // ----------------------------------------------------------------------------
 tao_foldmap_fnc_drawUpdate = {
 	// Draw location of player if in Vet/Expert and has a GPS and is tablet (no magic for paper map)
-	if (!cadetMode && {("ItemGPS" in assignedItems player)} && {!TAO_FOLDMAP_PAPER}) then {
+	if (!cadetMode && {("ItemGPS" in assignedItems player)} && {!tao_foldmap_alternateDrawPaper}) then {
 		_pos = getPos player;
 
 		(FOLDMAP displayCtrl DAYMAP) drawIcon [getText(configFile >> "CfgMarkers" >> "mil_arrow2" >> "icon"), [0.06, 0.08, 0.06, 0.87], _pos, 19, 25, direction vehicle player, "", false];
 		(FOLDMAP displayCtrl NIGHTMAP) drawIcon [getText(configFile >> "CfgMarkers" >> "mil_arrow2" >> "icon"), [0.9, 0.9, 0.9, 0.8], _pos, 19, 25, direction vehicle player, "", false];
 	};
 
-	if (TAO_FOLDMAP_PAPER) then {
+	if (tao_foldmap_alternateDrawPaper) then {
 		// Darken paper map based on time. Based on ShackTac Map Brightness by zx64 & Dslyecxi.
 		_alpha = (0.72 min (abs(sunOrMoon - 1)));
 		_rectPos = (FOLDMAP displayCtrl DAYMAP) ctrlMapScreenToWorld [MAP_XPOS, MAP_YPOS];
@@ -161,7 +144,7 @@ tao_foldmap_fnc_drawUpdate = {
 // ----------------------------------------------------------------------------
 tao_foldmap_fnc_onLoadDialog = {
 	// If config set, change to paper map.
-	if (TAO_FOLDMAP_PAPER) then {
+	if (tao_foldmap_alternateDrawPaper) then {
 		// Change to paper background.
 		(FOLDMAP displayCtrl BACKGROUND) ctrlSetText "\tao_foldmap_a3\data\paper_ca.paa";
 
@@ -174,7 +157,7 @@ tao_foldmap_fnc_onLoadDialog = {
 	// Determine if it's day or night so we can use the correct map (tablet only).
 	tao_foldmap_mapCtrlActive = DAYMAP;
 	tao_foldmap_mapCtrlInactive = NIGHTMAP;
-	if (!TAO_FOLDMAP_PAPER && {tao_foldmap_isNightMap}) then {
+	if (!tao_foldmap_alternateDrawPaper && {tao_foldmap_isNightMap}) then {
 		tao_foldmap_mapCtrlActive = NIGHTMAP;
 		tao_foldmap_mapCtrlInactive = DAYMAP;
 	};
@@ -206,7 +189,7 @@ tao_foldmap_fnc_onLoadDialog = {
 	
 	// Add per-frame draw handler to update the player marker and darken map.
 	(FOLDMAP displayCtrl DAYMAP) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_fnc_drawUpdate"];
-	if (!TAO_FOLDMAP_PAPER) then {
+	if (!tao_foldmap_alternateDrawPaper) then {
 		(FOLDMAP displayCtrl NIGHTMAP) ctrlAddEventHandler ["Draw", "[] call tao_foldmap_fnc_drawUpdate"];
 	};
 };
@@ -284,7 +267,7 @@ tao_foldmap_fnc_openFoldmap = {
 	// ------------
 	while {tao_foldmap_doShow && {!visibleMap} && {cameraView in ["INTERNAL","EXTERNAL"]} && {alive player}} do {
 		// Update the time and grid on the tablet status bar.
-		if (!TAO_FOLDMAP_PAPER) then {
+		if (!tao_foldmap_alternateDrawPaper) then {
 			_grid = format ["GRID %1", mapGridPosition player];
 			(FOLDMAP displayCtrl STATUSLEFT) ctrlSetText _grid;
 
@@ -296,7 +279,7 @@ tao_foldmap_fnc_openFoldmap = {
 			(FOLDMAP displayCtrl STATUSRIGHT) ctrlSetText _date;
 		};
 
-		if (TAO_FOLDMAP_ENABLESHAKE && {ctrlCommitted (FOLDMAP displayCtrl BACKGROUND)}) then {
+		if (ctrlCommitted (FOLDMAP displayCtrl BACKGROUND)) then {
 			// If the player is moving, shake the map back and forth a little.
 			_v = (velocity player) call bis_fnc_magnitude;
 
@@ -479,147 +462,12 @@ tao_foldmap_fnc_confirmMove = {
 		tao_foldmap_mapPosY = _posY;
 		[0.2] call tao_foldmap_fnc_moveMapOnscreen;
 
-		if (!isNil "tao_configsys") then {
-			// Save to config file.
-			["Tao Folding Map", "MapPosX", _posX] call tao_configsys_fnc_writeKey;
-			["Tao Folding Map", "MapPosY", _posY] call tao_configsys_fnc_writeKey;
-		};
+		// Save to profile namespace.
+		profileNamespace setVariable ["tao_foldingmap_mapPosX", _posX];
+		profileNamespace setVariable ["tao_foldingmap_mapPosY", _posY];
 	} else {
 		["Invalid position."] call cba_fnc_systemChat;
 	};
-};
-
-// ----------------------------------------------------------------------------
-// Process keybinds from config file. If config file binds are disabled, do 
-// nothing.
-// ----------------------------------------------------------------------------
-tao_foldmap_fnc_processKeyConfig = {
-	// Key config format is [dikCode, shift?, ctrl?, alt?]
-	if (TAO_FOLDMAP_USECUSTOMKEYS) then {
-		// User has asked us to use config keys, parse them into a keyHandler check expression
-		tao_foldmap_keyOpen = [TAO_FOLDMAP_OPEN, TAO_FOLDMAP_OPEN_SHIFT, TAO_FOLDMAP_OPEN_CTRL, TAO_FOLDMAP_OPEN_ALT];
-		tao_foldmap_keyCenter = [TAO_FOLDMAP_CENTER, TAO_FOLDMAP_CENTER_SHIFT, TAO_FOLDMAP_CENTER_CTRL, TAO_FOLDMAP_CENTER_ALT];
-		tao_foldmap_keyZoomIn = [TAO_FOLDMAP_ZOOMIN, TAO_FOLDMAP_ZOOMIN_SHIFT, TAO_FOLDMAP_ZOOMIN_CTRL, TAO_FOLDMAP_ZOOMIN_ALT];
-		tao_foldmap_keyZoomOut = [TAO_FOLDMAP_ZOOMOUT, TAO_FOLDMAP_ZOOMOUT_SHIFT, TAO_FOLDMAP_ZOOMOUT_CTRL, TAO_FOLDMAP_ZOOMOUT_ALT];
-		tao_foldmap_keyNVMode = [TAO_FOLDMAP_NVMODE, TAO_FOLDMAP_NVMODE_SHIFT, TAO_FOLDMAP_NVMODE_CTRL, TAO_FOLDMAP_NVMODE_ALT];
-		tao_foldmap_keyReposition = [TAO_FOLDMAP_REPOSITION, TAO_FOLDMAP_REPOSITION_SHIFT, TAO_FOLDMAP_REPOSITION_CTRL, TAO_FOLDMAP_REPOSITION_ALT];
-	} else {
-		// Default: Use modified actionKeys for all keybinds.
-		tao_foldmap_keyOpen = [actionKeys "ShowMap" select 0, true, false, false];
-		tao_foldmap_keyCenter = [actionKeys "ShowMap" select 0, true, true, false];
-		tao_foldmap_keyZoomIn = [actionKeys "ZoomIn" select 0, true, true, false];
-		tao_foldmap_keyZoomOut = [actionKeys "ZoomOut" select 0, true, true, false];
-		tao_foldmap_keyNVMode = [actionKeys "NightVision" select 0, true, true, false];
-		tao_foldmap_keyReposition = [actionKeys "ShowMap" select 0, true, true, true];
-	};
-};
-
-// ----------------------------------------------------------------------------
-// XNOR for SQF booleans.   [a, b] call tao_fnc_xnor;
-// ----------------------------------------------------------------------------
-tao_fnc_xnor = {
-	// The last SQF XNOR built-in operator is in captivity.
-	// The galaxy is at peace.
-	_a = _this select 0;
-	_b = _this select 1;
-
-	_ret = true;
-	if (_a) then {
-		if (_b) then {
-			_ret = true;
-		} else {
-			_ret = false;
-		};
-	} else {
-		if (!_b) then {
-			_ret = true;
-		} else {
-			_ret = false;
-		};
-	};
-
-	_ret;
-};
-
-// ---------------------------------------------------------------------------- 
-// Checks if a given key input [dikcode, shift, ctrl, alt] is equal to a key 
-// config array (same format).
-// [keyconfig array, dikcode, shift, ctrl, alt] call tao_foldmap_fnc_checkKey
-// ---------------------------------------------------------------------------- 
-tao_foldmap_fnc_checkKey = {
-	// Exit immediately with false if TCS is available.
-	if (tao_foldmap_usingTCS) exitWith {false};
-
-	_keyConfig = _this select 0;
-	_compareKeyConfig = _this select 1;
-
-	_kcDikCode = _keyConfig select 0;
-	_kcShift = _keyConfig select 1;
-	_kcCtrl = _keyConfig select 2;
-	_kcAlt = _keyConfig select 3;
-
-	_dikCode = _compareKeyConfig select 0;
-	_shift = _compareKeyConfig select 1;
-	_ctrl = _compareKeyConfig select 2;
-	_alt = _compareKeyConfig select 3;
-
-	// Return true if all are equal, false if not.
-
-	//_dikCode == _kcDikCode && _shift == _kcShift && _ctrl == _kcCtrl && _alt == _kcAlt;
-	_dikCode == _kcDikCode && ([_shift, _kcShift] call tao_fnc_xnor) && ([_ctrl, _kcCtrl] call tao_fnc_xnor) && ([_alt, _kcAlt] call tao_fnc_xnor);
-};
-
-// ---------------------------------------------------------------------------- 
-// Key handler for all map-related functions.
-// ---------------------------------------------------------------------------- 
-tao_foldmap_fnc_handleKey = {
-	private["_handled", "_display", "_ctrl", "_dikCode", "_shift", "_alt"];
-	_display = _this select 0;
-	_dikCode = _this select 1;
-	_shift = _this select 2;
-	_ctrl = _this select 3;
-	_alt = _this select 4;
-	  
-	_handled = false;
-
-	// If opening gear, close foldmap.
-	if (_dikCode in (actionKeys "Gear")) then {
-		tao_foldmap_doShow = false;
-		_handled = false;
-	};
-	
-	// Toggle.
-	if ([tao_foldmap_keyOpen, [_dikCode, _shift, _ctrl, _alt]] call tao_foldmap_fnc_checkKey) then {
-		_handled = [] call tao_foldmap_fnc_toggle;
-	};
-	
-	// Refold.
-	if ([tao_foldmap_keyCenter, [_dikCode, _shift, _ctrl, _alt]] call tao_foldmap_fnc_checkKey && tao_foldmap_isOpen) then {
-		_handled = [] call tao_foldmap_fnc_refold;
-	};
-
-	// Center and zoom in.
-	if ([tao_foldmap_keyZoomIn, [_dikCode, _shift, _ctrl, _alt]] call tao_foldmap_fnc_checkKey) then {
-		_handled = [] call tao_foldmap_fnc_zoomIn;
-	};
-	
-	// Center and zoom out.
-	if ([tao_foldmap_keyZoomOut, [_dikCode, _shift, _ctrl, _alt]] call tao_foldmap_fnc_checkKey) then {
-
-		_handled = [] call tao_foldmap_fnc_zoomOut;
-	};
-
-	// Toggle the map's nightvision view if available.
-	if ([tao_foldmap_keyNVMode, [_dikCode, _shift, _ctrl, _alt]] call tao_foldmap_fnc_checkKey) then {
-		_handled = [] call tao_foldmap_fnc_nvMode;
-	};
-
-	// Reposition the map.
-	if ([tao_foldmap_keyReposition, [_dikCode, _shift, _ctrl, _alt]] call tao_foldmap_fnc_checkKey) then {
-		_handled = [] call tao_foldmap_fnc_reposition;
-	};
-	
-	_handled;
 };
 
 // ---------------------------------------------------------------------------- 
@@ -716,7 +564,7 @@ tao_foldmap_fnc_zoomOut = {
 tao_foldmap_fnc_nvMode = {
 	_handled = false;
 
-	if (tao_foldmap_isOpen && !TAO_FOLDMAP_PAPER) then {
+	if (tao_foldmap_isOpen && !tao_foldmap_alternateDrawPaper) then {
 		// Change which map is in use
 		tao_foldmap_isNightMap = !tao_foldmap_isNightMap;
 		if (tao_foldmap_isNightMap) then {
@@ -769,27 +617,59 @@ tao_foldmap_fnc_reposition = {
 	_handled;
 };
 
+// ---------------------------------------------------------------------------- 
+// Change map type to "paper" or "tablet."
+// ---------------------------------------------------------------------------- 
+tao_foldmap_fnc_changeType = {
+	_handled = false;
+	_type = _this select 0;
+
+	if (tao_foldmap_changePermitted && (_type == "paper" || _type == "tablet")) then {
+		// Save new style to profile namespace.
+		profileNamespace setVariable ["tao_foldmap_drawStyle", _type];
+
+		// If paper was selected, turn on alternate render codepath.
+		if (_type == "paper") then {
+			tao_foldmap_alternateDrawPaper = true;
+		} else {
+			tao_foldmap_alternateDrawPaper = false;
+		};
+
+		if (tao_foldmap_isOpen) then {
+			// Close and reopen the map.
+			[] spawn tao_foldmap_fnc_toggle;
+			[] spawn {
+				sleep 1;
+				[] spawn tao_foldmap_fnc_toggle;
+			};
+		};
+
+		_handled = true;
+	};
+
+	_handled;
+};
+
 /////////////////////////////////////////////////////////////////////////////////
 
 // Read config file keys.
 [] call tao_foldmap_fnc_processKeyConfig;
 
-// Check if CBA keybinding system is available.
+// Check if CBA Keybinding system is available.
 if (!isNil "cba_keybinding") then {
-	// Do not use config file key binds.
-	tao_foldmap_usingTCS = true;
+	// Register CBA keybinds (defaults are read from config file).
+	["Tao Folding Map", "Toggle folding map", "tao_foldmap_fnc_toggle", [DIK_M,true,false,false], false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Refold map", "tao_foldmap_fnc_refold", [DIK_M,true,true,false], false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Zoom in", "tao_foldmap_fnc_zoomIn", [DIK_NUMPADPLUS,true,true,false], false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Zoom out", "tao_foldmap_fnc_zoomOut", [DIK_NUMPADMINUS,true,true,false], false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Night mode (tablet only)", "tao_foldmap_fnc_nvMode", [DIK_N,true,true,false], false] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Configure map", "tao_foldmap_fnc_openFleximenu", [DIK_M,true,true,true], false] call cba_fnc_registerKeybind;
 
-	// Register TCS keybinds (defaults are read from config file).
-	["Tao Folding Map", "Toggle folding map", "tao_foldmap_fnc_toggle", tao_foldmap_keyOpen, false] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Refold map", "tao_foldmap_fnc_refold", tao_foldmap_keyCenter, false] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Zoom in", "tao_foldmap_fnc_zoomIn", tao_foldmap_keyZoomIn, false] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Zoom out", "tao_foldmap_fnc_zoomOut", tao_foldmap_keyZoomOut, false] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Night mode (tablet only)", "tao_foldmap_fnc_nvMode", tao_foldmap_keyNVMode, false] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Reposition map", "tao_foldmap_fnc_reposition", tao_foldmap_keyReposition, false] call cba_fnc_registerKeybind;
+	// Define and register the fleximenu.
+	[] call compile preprocessFileLineNumbers "\tao_foldmap_a3\fleximenu.sqf";
+} else {
+	["Tao Folding Map: Your version of CBA is too old for this version of Tao Folding Map. Please upgrade CBA."] call cba_fnc_systemChat;
 };
-
-// Add display key handler. This will only register binds if TCS is not available.
-["KeyDown", "_this call tao_foldmap_fnc_handleKey"] call cba_fnc_addDisplayHandler;
 
 /////////////////////////////////////////////////////////////////////////////////
 
