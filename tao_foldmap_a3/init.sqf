@@ -23,6 +23,12 @@ Shapur: 2048		("Shapur_BAF")
 Utes: 5120		("utes")
 Chernarus: 15360
 Desert: 2048		("Desert_E")
+Virtual Reality: 8192	("VR")
+Bukovina: 3840		("Bootcamp_ACR")
+PR FATA: 10240		("fata")
+Ft. Benning - US Army Infantry School: 7168 ("j198_ftb")
+Celle 2: 12288		("mbg_celle2")
+Bystrica: 7680		("Woodland_ACR")
 */
 _island = worldname;
 switch (_island) do
@@ -36,6 +42,12 @@ switch (_island) do
 	case "Desert_E": { tao_foldmap_mapScale = 0.8;};
 	case "Chernarus": { tao_foldmap_mapScale = 0.107;};
 	case "utes": { tao_foldmap_mapScale = 0.32;};
+	case "VR": { tao_foldmap_mapScale = 0.2;};
+	case "Bootcamp_ACR": { tao_foldmap_mapScale = 0.427;};
+	case "fata": { tao_foldmap_mapScale = 0.16;};
+	case "j198_ftb": { tao_foldmap_mapScale = 0.229;};
+	case "mbg_celle2": { tao_foldmap_mapScale = 0.133;};
+	case "Woodland_ACR": { tao_foldmap_mapScale = 0.213;};
 	default { tao_foldmap_mapScale = 0.2;};
 };
 
