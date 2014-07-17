@@ -29,6 +29,7 @@ PR FATA: 10240		("fata")
 Ft. Benning - US Army Infantry School: 7168 ("j198_ftb")
 Celle 2: 12288		("mbg_celle2")
 Bystrica: 7680		("Woodland_ACR")
+Fallujah: 10240		("fallujah")
 */
 _island = worldname;
 switch (_island) do
@@ -48,6 +49,7 @@ switch (_island) do
 	case "j198_ftb": { tao_foldmap_mapScale = 0.229;};
 	case "mbg_celle2": { tao_foldmap_mapScale = 0.133;};
 	case "Woodland_ACR": { tao_foldmap_mapScale = 0.213;};
+	case "fallujah": { tao_foldmap_mapScale = 0.16;};
 	default { tao_foldmap_mapScale = 0.2;};
 };
 
