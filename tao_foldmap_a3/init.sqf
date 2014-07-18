@@ -541,10 +541,10 @@ tao_foldmap_fnc_zoomIn = {
 			(FOLDMAP displayCtrl tao_foldmap_mapCtrlActive) ctrlMapAnimAdd [0, tao_foldmap_mapScale, [tao_foldmap_centerPos select 0, tao_foldmap_centerPos select 1, 0]];
 			ctrlMapAnimCommit (FOLDMAP displayCtrl tao_foldmap_mapCtrlActive);
 			tao_foldmap_needsScaleReset = true;
+			
 			_handled = true;
 		};
 	};
-	_handled = true;
 
 	_handled;
 };
