@@ -672,12 +672,12 @@ tao_foldmap_fnc_changeType = {
 // Check if CBA Keybinding system is available.
 if (!isNil "cba_keybinding") then {
 	// Register CBA keybinds (defaults are read from config file).
-	["Tao Folding Map", "Toggle folding map", "tao_foldmap_fnc_toggle", [DIK_M,true,false,false]] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Refold map", "tao_foldmap_fnc_refold", [DIK_M,true,true,false]] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Zoom in", "tao_foldmap_fnc_zoomIn", [DIK_NUMPADPLUS,true,true,false]] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Zoom out", "tao_foldmap_fnc_zoomOut", [DIK_NUMPADMINUS,true,true,false]] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Night mode (tablet only)", "tao_foldmap_fnc_nvMode", [DIK_N,true,true,false]] call cba_fnc_registerKeybind;
-	["Tao Folding Map", "Configure map", "tao_foldmap_fnc_openFleximenu", [DIK_M,true,true,true]] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Toggle folding map", {_this call tao_foldmap_fnc_toggle}, [DIK_M,true,false,false]] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Refold map", {_this call tao_foldmap_fnc_refold}, [DIK_M,true,true,false]] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Zoom in", {_this call tao_foldmap_fnc_zoomIn}, [DIK_NUMPADPLUS,true,true,false]] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Zoom out", {_this call tao_foldmap_fnc_zoomOut}, [DIK_NUMPADMINUS,true,true,false]] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Night mode (tablet only)", {_this call tao_foldmap_fnc_nvMode}, [DIK_N,true,true,false]] call cba_fnc_registerKeybind;
+	["Tao Folding Map", "Configure map", {_this call tao_foldmap_fnc_openFleximenu}, [DIK_M,true,true,true]] call cba_fnc_registerKeybind;
 
 	// Define and register the fleximenu.
 	[] call compile preprocessFileLineNumbers "\tao_foldmap_a3\fleximenu.sqf";
