@@ -51,7 +51,10 @@ tao_foldmap_fleximenu_def call cba_ui_fnc_fleximenu_add;
 // Open the Fleximenu for configuring the map.
 // ---------------------------------------------------------------
 tao_foldmap_fnc_openFleximenu = {
+    _handled = false;
 	if (tao_foldmap_isOpen) then {
+        _handled = true;
 		tao_foldmap_fleximenu_def call cba_fnc_fleximenu_openMenuByDef;
 	};
+    _handled;
 };
